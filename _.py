@@ -32,18 +32,18 @@ mail	IN	A	{Ip}
         
     local='''
     
-zone "{Domain}" {
+zone "'''+Domain+'''" {
     type master;
-    file "/etc/bind/db.{Domain}";
-    allow-transfer { {Ip}; };
+    file "/etc/bind/db.'''+Domain+'''";
+    allow-transfer { '''+Ip+''';};
 };
 
-    '''.format(Domain=Domain,Ip=Ip)
+    '''
     
     with open('/etc/bind/named.conf.local', 'r+') as f:
         content = f.read()
         f.seek(0, 0)
-        f.write(dbData + '\n' + content)
+        f.write(local + '\n' + content)
         f.close()
         
     system('sudo systemctl restart bind9')
@@ -54,14 +54,14 @@ def Nginx(Domain,PortForReverseProxy):
     
 server {
 	
-    server_name www.{Domain} {Domain};
+    server_name www.'''+Domain+''' '''+Domain+''';
 
     location / {
-       proxy_pass http://127.0.0.1:{PortForReverseProxy};
+       proxy_pass http://127.0.0.1:'''+PortForReverseProxy+''';
+    }
     }
 
-
-    '''.format(Domain=Domain,PortForReverseProxy=PortForReverseProxy)
+    '''
 
     with open('/etc/nginx/sites-available/'+Domain,'w') as f:
         f.write(str(NginxConf))
@@ -72,9 +72,9 @@ server {
 
 
 
-if len(sys.argv)==3:
-    Bind9(sys.argv[0],sys.argv[1])
-    Nginx(sys.argv[0],sys.argv[2])
+if len(sys.argv)==4:
+    Bind9(sys.argv[1],sys.argv[2])
+    Nginx(sys.argv[1],sys.argv[3])
 
 else:
     print ("python ME.py Domain Ip PortForReverseProxy")
